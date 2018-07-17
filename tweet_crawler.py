@@ -3,7 +3,6 @@
 from requests_oauthlib import OAuth1, OAuth1Session
 import json, config, time, requests
 
-
 CK = config.CONSUMER_KEY
 CS = config.CONSUMER_SECRET
 AT = config.ACCESS_TOKEN
@@ -40,6 +39,17 @@ def get_user_tweets(count=5, user='tkym1220'):
     else:
         print('Failed: %d' % res.status_code)
 
+def get_id_tweets(id=737994989884428293):
+    url = 'https://api.twitter.com/1.1/statuses/show.json'
+    params = {'id': id}
+    oath = create_oath_session()
+    res = oath.get(url, params=params)
+    if res.status_code == 200:
+        timelines = json.loads(res.text)
+        print(timelines['text'])
+    else:
+        print('Failed: %d' % res.status_code)
+
 def post_tweet():
     tweet = input('>> ')
     print('*******************************')
@@ -56,5 +66,5 @@ def post_tweet():
         print('Failed: %d' % res.status_code)
 
 if __name__ == '__main__':
-    post_tweet()
+    get_id_tweets()
 
