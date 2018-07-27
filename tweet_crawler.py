@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-import config, os, re, time
+import config, os, re, time, twitter
 from utils import get_user_tweets
 
 CK = config.CONSUMER_KEY
@@ -20,36 +20,43 @@ def main():
     start = time.time()
 
     # create indivisual dir for store tweets
-    user = 'tkym1220'
+    user = 'KiSaSaGe_OU'
     if not os.path.isdir('./data/{}'.format(user)):
         os.mkdir('./data/{}'.format(user))
 
-    text_num = '0'
+    tweet_num = 0   #
     max_id = None
+    index = 0
     t0 = time.time()
+    flg = True
 
     # crawl tweets
-    for index in range(10):
-        tweet_list = get_user_tweets(count=500, user=user, max_id=max_id)
+    while flg:
+        tweet_list = get_user_tweets(count=200, user=user, max_id=max_id)
 
         if tweet_list is not None:
             tweets = [text_preprocess(post) for post in tweet_list]
-            max_id = tweet_list[-1]['id']
-        with open('./data/{}/data_{}.txt'.format(user, text_num), 'a', encoding='utf-8') as f:
-            f.write(''.join({tweet['text'] + '\n' for tweet in tweets if len(tweet['entities']['urls']) == 0}))
+            # exit conditions
+            if tweet_list[-1]['id'] == max_id:
+                flg = False
+            else:
+                max_id = tweet_list[-1]['id']
+        with open('./data/{}/data_{}.txt'.format(user, str(int(tweet_num / 1000))), 'a', encoding='utf-8') as f:
+            tweet_set = {tweet['text'] + '\n' for tweet in tweets if len(tweet['entities']['urls']) == 0}
+            f.write(''.join(tweet_set))
+            tweet_num += len(tweet_set)
         tweets.clear()
-        # next file name
-        text_num = str(index + 1)
+        index += 1
 
         # time restricted
-        if (index + 1) % 90 == 0:
+        if index % 100 == 0:
             t1 = time.time()
             if (900 - (t1 - t0)) > 0:
                 print(900 - (t1 - t0), '[sec] time sleep for the next tweet crawl')
                 time.sleep(900 - (t1 - t0))
             t0 = time.time()
 
-        print(index + 1, 'crawl end')
+        print(index, 'times crawl end')
 
     exe_time = time.time() - start
     print('Execution time : {0} [sec]'.format(exe_time))
